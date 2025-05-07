@@ -1,0 +1,32 @@
+name: Deploy to Power Platform
+
+on:
+  push:
+    branches: [ main ]  # Trigger on push to main branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Install Power Platform CLI
+      run: |
+        npm install -g @microsoft/powerplatform-cli
+
+    - name: Authenticate to Power Platform
+      run: |
+        pac auth create \
+          --client-id ${{ secrets.POWERPLATFORM_CLIENT_ID }} \
+          --tenant ${{ secrets.POWERPLATFORM_TENANT_ID }} \
+          --client-secret ${{ secrets.POWERPLATFORM_CLIENT_SECRET }}
+
+    - name: Import Power Automate Flow
+      run: |
+        pac solution import --path flows/CoachingFlow.zip --force-overwrite true
+
+    - name: Import Copilot Agent (Bot)
+      run: |
+        pac solution import --path copilot/CoachingSolution.zip --force-overwrite true
